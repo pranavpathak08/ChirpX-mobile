@@ -12,6 +12,32 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
+const Field = ({ 
+    label, 
+    value, 
+    onChangeText, 
+    error,
+    ...props 
+}: {
+    label: string;
+    value: string;
+    onChangeText: (text: string) => void;
+    error?: string;
+    [key: string]: any;
+}) => (
+    <View style={styles.field}>
+        <Text style={styles.label}>{label}</Text>
+        <TextInput
+            style={[styles.input, error ? styles.inputError : null]}
+            value={value}
+            onChangeText={onChangeText}
+            placeholderTextColor="#555570"
+            {...props}
+        />
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
+);
+
 export default function LoginScreen() {
     const nav = useNavigation<Nav>();
     const { login } = useAuth();
@@ -20,6 +46,12 @@ export default function LoginScreen() {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [serverError, setServerError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const update = (key: string, value: string) => {
+        setForm(p => ({ ...p, [key]: value }));
+        if (errors[key]) setErrors(p => ({ ...p, [key]: '' }));
+        if (serverError) setServerError('');
+    };
 
     const validate = () => {
         const e: Record<string, string> = {};
@@ -42,26 +74,9 @@ export default function LoginScreen() {
         if (!result.success) setServerError(result.error || "Login Failed");
     }
     
-    const Field = ({ label, field, ...props }: any) => (
-        <View style={styles.field}>
-            <Text style={styles.label}>{label}</Text>
-            <TextInput
-                style={[styles.input, errors[field] ? styles.inputError : null]}
-                value={form[field as keyof typeof form]}
-                onChangeText={(v) => {
-                setForm(p => ({ ...p, [field]: v }));
-                if (errors[field]) setErrors(p => ({ ...p, [field]: '' }));
-                setServerError('');
-                }}
-                placeholderTextColor="#555570"
-                {...props}
-            />
-            {errors[field] ? <Text style={styles.errorText}>{errors[field]}</Text> : null}
-        </View>
-    )
 
     return (
-        <SafeAreaProvider style={styles.container}>
+        <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f0f1a" />
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -79,16 +94,23 @@ export default function LoginScreen() {
                     </View>
                 ) : null}
 
-                <Field label="Email" field="email"
-                    placeholder="your@email.com"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                />
-                <Field label="Password" field="password"
-                    placeholder="••••••••"
-                    secureTextEntry
-                />
+                <Field 
+            label="Email" 
+            value={form.email}
+            onChangeText={(v) => update('email', v)}
+            error={errors.email}
+            placeholder="your@email.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+        />
+        <Field 
+            label="Password" 
+            value={form.password}
+            onChangeText={(v) => update('password', v)}
+            error={errors.password}
+            placeholder="••••••••"
+            secureTextEntry
+        />
 
                 <TouchableOpacity style={styles.btnPrimary} onPress={handleSubmit} disabled={loading} activeOpacity={0.85}>
                     {loading
@@ -106,7 +128,7 @@ export default function LoginScreen() {
 
                 </ScrollView>
             </KeyboardAvoidingView>
-        </SafeAreaProvider>
+        </View>
   );
 }
 

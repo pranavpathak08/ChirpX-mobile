@@ -12,7 +12,7 @@ export default function HomeScreen() {
   const nav = useNavigation<Nav>();
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0f0f1a" />
 
       <View style={styles.content}>
@@ -54,7 +54,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaProvider>
+    </View>
   );
 }
 
